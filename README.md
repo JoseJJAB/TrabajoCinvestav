@@ -21,8 +21,8 @@ neurons. Other formats of the data may be analysed, such as hdf5
  
  
  (c) 2019
- Coding, tests and mathematical framework by W.P. Karel Zapfe Zaldivar.
- Physiological and electroneurological framework by Jose Jesus Aceves.
+ Coding, tests and mathematical work by W.P. Karel Zapfe Zaldivar.
+ Physiological and electroneurological work by Jose Jesus Aceves.
  
  
 
