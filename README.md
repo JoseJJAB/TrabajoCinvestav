@@ -17,7 +17,11 @@ neurons. Other formats of the data may be analysed, such as hdf5
  PyABF, a Python module for opening and reading abf files,
  through PyCall. Graphics are made via PyPlot. 
  
- Our code shall be public with GNU Public Licence 3. 
+ The main code is presented in the Jupyter Notebook "Spiklet Detection". 
+ Auxiliary function are on sacadatos.jl.
+ 
+ 
+ Our code shall be public with GNU General Public Licence 3. 
  
  
  (c) 2019
