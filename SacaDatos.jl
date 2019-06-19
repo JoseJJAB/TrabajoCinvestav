@@ -1,4 +1,8 @@
+module SacaDatos
 
+using HDF5
+
+export sacainfo, devuelvedatos
 
 function sacainfo(entrada)
     entrada["description"][1].data
@@ -12,7 +16,7 @@ function devuelvedatos(h5datos, onchannel)
     a=()
     result=Dict{String,Any}()
     if exists(h5datos, onchannel)
-        aux=read(datos[onchannel])
+        aux=read(h5datos[onchannel])
         for (keys, values) in aux
             #println(keys)
             if keys=="section_00"
@@ -31,3 +35,5 @@ function devuelvedatos(h5datos, onchannel)
     return (a,result)
 end
 
+
+end #module
