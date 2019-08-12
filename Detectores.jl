@@ -3,6 +3,11 @@ module Detectores
 # frecuencia por default para muchas tonterias.
 deffreq=25.0
 
+#=
+Necesitamos un parametro adecuado para el suavizado Gaussiano
+Asi como esta solo funciona con datos a 25 kHz.
+=#
+
 export iart, tari, derivadadt,
        suaveduro, gauss, pesosgauss, suavegauss, g0,
        intervalosP, averagedictdict, separamochas
@@ -28,7 +33,7 @@ function tari(it,ft; freq=deffreq)
 end
 
 function derivadadt(xx::Array; freq=deffreq)
-    aux=diff(xx).*f
+    aux=diff(xx).*freq
     result=vcat(aux, aux[end])
 end
 
@@ -94,7 +99,8 @@ a sus parametros de entrada
 
 
 
-function intervalosP(dtrazo::Array; uinf=0.06*freq, usup=0.5*freq)
+function intervalosP(dtrazo::Array; preG=100, postG=400,
+                     uinf=0.06*deffreq, usup=0.5*deffreq)
     # recuerdese: dtrazo es la DERIVADA del trazo suavizado, no el trazo.
     #se recomienda usar una diferencia suavizada en dtrazo
 
@@ -147,13 +153,13 @@ function intervalosP(dtrazo::Array; uinf=0.06*freq, usup=0.5*freq)
         if a<usup
             lugarreal=aux[lugarlista]
             ai=lugarreal-preG
-            af=lugarreal+posG
+            af=lugarreal+postG
             (ai<1) ? ai=1 : ai=ai
             (af>tamanointervalo) ? af=tamanointervalo : af=af
             (maximototal, b)=findmax(dtrazo[ai:af])  
             println("vamos bien, ", ai, " ", af, " ", maximototal)
          
-            if maximototal<thres2
+            if maximototal<40
                 result[j]=ai:af
             end
                 
