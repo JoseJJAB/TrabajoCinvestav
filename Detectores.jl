@@ -144,7 +144,10 @@ function intervalosP(dtrazo::Array; preG=100, postG=400,
     3) si si, procedemos a localizar su posicion en la lista ORIGINAL de datos
     4) devolvemos una lista con todos los numeritos en ese rango de 200 antes a 800 despues
     =#
-     n=length(keys(preresult))
+    n=length(keys(preresult))
+
+    println(preresult)
+    
     if n>0    
     for j in keys(preresult)
         aux=preresult[j]
