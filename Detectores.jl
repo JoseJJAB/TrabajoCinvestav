@@ -64,6 +64,7 @@ function pesosgauss(desv::Real,n::Int)
 end
         
 function suavegauss(trazo::Array, nv=10)
+    #cambiar nv por ms reales y que dependa de freq.
     # nv corresponde a la desviacion estandar
     aux=trazo
     pesos=pesosgauss(nv/2,nv)
@@ -103,7 +104,13 @@ function intervalosP(dtrazo::Array; preG=100, postG=400,
                      uinf=0.06*deffreq, usup=0.5*deffreq)
     # recuerdese: dtrazo es la DERIVADA del trazo suavizado, no el trazo.
     #se recomienda usar una diferencia suavizada en dtrazo
+    #=
+    Criterios plausibles para las derivadas sospechosas de
+    ser una espigulata son los siguientes:
+    la derivada minima PROMEDIO es de 2 mV/ms
+    la derivada maximo PROMEDIO es de 3.4 mV/ms 
 
+    =#
     esunbrinco(x)=  x>uinf 
     escontiguo(x,y)=(y-x)==1
 
@@ -176,6 +183,8 @@ function intervalosP(dtrazo::Array; preG=100, postG=400,
     
     return result
 end
+
+
 
 function averagedictdict(ints::Dict, data::Dict)
     #= Funcion que toma un diccionario
@@ -250,5 +259,5 @@ end
 result=(Limpias, Mochas)
 end
 
-
 end #module
+
