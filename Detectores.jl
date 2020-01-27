@@ -10,7 +10,8 @@ Asi como esta solo funciona con datos a 25 kHz.
 
 export iart, tari, derivadadt,
        suaveduro, gauss, pesosgauss, suavegauss, g0,
-       intervalosP, averagedictdict, separamochas
+       intervalosP, averagedictdict, separamochas, risetime,
+       normCut
 
 
 
@@ -55,7 +56,10 @@ end
 gauss(x, sigma)=exp(-(x/sigma)^2/2)
 
 function pesosgauss(desv::Real,n::Int)
-# funcion que promedia cada punto sobre sus vecinos, pero con peso gaussiano
+    # Da los pesos gaussianos con desviacion desv,
+    # n cuadros atras
+    # uno en medio y n cuadros enfrente.
+    # las distancias estan en unidades de cuadros!
     g=zeros(2*n+1)
     for j=-n:n
         g[j+n+1]=gauss(j,desv)
@@ -64,8 +68,8 @@ function pesosgauss(desv::Real,n::Int)
 end
         
 function suavegauss(trazo::Array, nv=10)
-    #cambiar nv por ms reales y que dependa de freq.
-    # nv corresponde a la desviacion estandar
+    #  nv corresponde a la desviacion estandar 
+    # en pasos discretos
     aux=trazo
     pesos=pesosgauss(nv/2,nv)
     pesoT=sum(pesos)
@@ -83,14 +87,22 @@ function suavegauss(trazo::Array, nv=10)
     return result 
 end
 
-# funcion que mueve la funcion por un desplazamiento d1
+function suavegauss(trazo::Array; dt::Real, freq=deffreq)
+    # dt esta en ms y freq en kHz
+    # equivalente a s y Hz.
+    nv=ceil(Int, dt*freq)
+    result=suavegauss(trazo, nv)
+    return result
+end
+
+
+
+# funcion que mueve la funcion para que su primer punto este en d1
 g0(xs::Array ,d1=-71)= xs.-(xs[1]+d1) 
 
 
-
-
-
-
+#000000000000000000000000000000000000000000000000000000000000000000000000+
+# 00000000000000000000000000000000000000000000000000000000000000000000000
 
 ###***** Funciones de Detectores Propiamente hablando
 #=
@@ -101,14 +113,16 @@ a sus parametros de entrada
 
 
 function intervalosP(dtrazo::Array; preG=100, postG=400,
-                     uinf=0.06*deffreq, usup=0.5*deffreq)
+                     uinf=2, usup=3.4)
     # recuerdese: dtrazo es la DERIVADA del trazo suavizado, no el trazo.
     #se recomienda usar una diferencia suavizada en dtrazo
     #=
     Criterios plausibles para las derivadas sospechosas de
     ser una espigulata son los siguientes:
     la derivada minima PROMEDIO es de 2 mV/ms
-    la derivada maximo PROMEDIO es de 3.4 mV/ms 
+    la derivada maximo PROMEDIO es de 3.4 mV/ms
+    
+     ¡¡¡¡ Los valores ya estan en la derivada en mV/ms !!!!
 
     =#
     esunbrinco(x)=  x>uinf 
@@ -139,7 +153,7 @@ function intervalosP(dtrazo::Array; preG=100, postG=400,
         n=length(keys(preresult))
         
     else 
-        println("no hay naaaaaada en la seccion")
+        println("no hay naaaaaada en esa seccion")
     end
     
     tamanointervalo=length(dtrazo)
@@ -153,32 +167,37 @@ function intervalosP(dtrazo::Array; preG=100, postG=400,
     =#
     n=length(keys(preresult))
 
-    println(preresult)
     
     if n>0    
-    for j in keys(preresult)
-        aux=preresult[j]
-        (a, lugarlista) =findmax(dtrazo[aux[1]:aux[end]])
-          #  println(aux)
-        if a<usup
-            lugarreal=aux[lugarlista]
-            ai=lugarreal-preG
-            af=lugarreal+postG
-            (ai<1) ? ai=1 : ai=ai
-            (af>tamanointervalo) ? af=tamanointervalo : af=af
-            (maximototal, b)=findmax(dtrazo[ai:af])  
-            println("vamos bien, ", ai, " ", af, " ", maximototal)
+        for j in keys(preresult)
+            aux=preresult[j]
+            
+            if aux!=[]
+                (a, lugarlista) =findmax(dtrazo[aux[1]:aux[end]])
+                println(a)
+                if a<usup
+                    lugarreal=aux[lugarlista]
+                    ai=lugarreal-preG
+                    af=lugarreal+postG
+                    (ai<1) ? ai=1 : ai=ai
+                    (af>tamanointervalo) ? af=tamanointervalo : af=af
+                    (maximototal, b)=findmax(dtrazo[ai:af])  
          
-            if maximototal<40
-                result[j]=ai:af
-            end
+        #puede haber OTRO maximo en el mismo intervalo si 
+        # por ejemplo, la derivada cambia de ritmo pero se mantiene positiva
+
+                    if maximototal<usup
+                        println("vamos bien, ", ai, " ", af, " ", maximototal)
+                        result[j]=ai:af
+                    end
+                  
+                    
+                  
                 
-                end # Este cierra el a<thres2 .
-        
-    end
-    
-    else
-       # println(" te dije que no hay naaaada")
+                end # Este cierra el a<usup2 .
+
+            end # cierra el aux!=0
+        end # cierra j in keys
     end
     
     return result
@@ -220,7 +239,7 @@ function risetime(derivada::Array, thresmin=0.25)
 
 end
 
-function separamochas(datos::Dict)
+function separamochas(datos::Dict, preG, posG)
     #= Dado que nuestras funciones nos devuelven
     diccionarios de arrays o de rangos,
     puede darse el caso de que sean desiguales.
@@ -258,6 +277,37 @@ end
 
 result=(Limpias, Mochas)
 end
+
+
+function normCut(datossuave, intervaloslimpios)
+    #=
+      Esta funtion toma la lista de intervalos putativos (sospechososo)
+     y la lista del diccionario de los datos ya limpiados (sin mochos o vacios.
+    y devuelve una lista de trazos posibles en un dicctionario equivalente a los
+    limpios de forma que todos los trazos empiecen en el valor promedio
+    inicial.
+    =#
+    
+    a=averagedictdict(intervaloslimpios, datossuave) # de ahora en adelante asi se sacan promedios sobre intervalos!
+    offset=a[1]
+    result=Dict{String,Dict}()
+    
+   for subs in keys(intervaloslimpios)
+    result[subs]=Dict{Int, Array}()
+    for j in keys(intervaloslimpios[subs])
+         arre=intervaloslimpios[subs][j]
+        # es mejor dibujar con rangos que con listas de numeros
+        rango=arre[1]:arre[end]
+        #normCut[subs][j]=suaves[subs][rango].-(suaves[subs][rango][1]-a[1])
+        result[subs][j]=g0(datossuave[subs][rango],a[1]) # g0 es la funcion que empareja el punto de inicio
+   
+    end
+        
+    end
+    return result
+end
+
+
 
 end #module
 
