@@ -1,0 +1,40 @@
+# 20201111 
+
+### Derivadas.
+
+Al parecer, antes que nada suavisamos gaussianamente (con una sigma de 0.4 ms) 
+antes que tomar la derivada. Buena opcion claro, pero ¿que tan buena?
+¿que frequencias estamos matando?
+
+No hay espiguletas que tengan una derivada (máxima) mayor a 12.5 V/s al parecer.
+
+La máxima derivada parece estar entre 1.5 y 2.0 V/s, la mínima alrededor
+de los -0.5 o -0.4 V/s. Después de eso entra un periodo de donde el ruido
+nos impide ver claramente los valores, pero tenemos tendencias 
+aproximadamente apreciables.
+
+A ojo, se puede ver en la figura de los trazos suavizados, un
+ascenso muy abrupto, pero un descenso comparativamente suave, en
+dos pasos: uno mas cercano en empinado a la subida, y el otro considerablemente
+menos empinado, despues de unos 5ms. Esto es bastante tiempo, ¿no?
+
+### Pregunta
+¿Porqué decidimos centrar las espiguletas en la máxima taza de cambio
+(segunda derivada igual a cero) en lugar de en su máximo punto (primera
+derivada igual a cero)? ¿Porqué nos interesaba ese valor?
+
+### Idea
+
+Tal vez, después del máximo del trazo (la punta de la espiguleta),
+podemos hacer un suavizado mas extremo, o filtrar frequencias de ruido,
+a fin de obtener un trazo con menos "olitas" arriba. De esta forma
+podremos tal vez obtener una visión mas clara de las dos "bajadas" diferentes.
+Me parece que LsqFit está haciendo un mal trabajo por esto.
+
+### Otra Idea
+
+Tal vez no es necesario filtrar, sino simplement forzar a LsqFit a
+hacer el ajuste de ambas rectas de la siguiente forma-,
+Tomar el trazo, y desde el pico hasta 5ms hacer un ajuste y desde los
+5ms hasta unos 35 ms mas, hacer otro ajuste.
+

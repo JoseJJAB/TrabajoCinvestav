@@ -282,7 +282,7 @@ end
 function normCut(datossuave, intervaloslimpios)
     #=
       Esta funtion toma la lista de intervalos putativos (sospechososo)
-     y la lista del diccionario de los datos ya limpiados (sin mochos o vacios.
+     y la lista del diccionario de los datos ya limpiados (sin mochos o vacios).
     y devuelve una lista de trazos posibles en un dicctionario equivalente a los
     limpios de forma que todos los trazos empiecen en el valor promedio
     inicial.
